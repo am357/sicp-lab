@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SICP Lab · Chapter 1</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <a href="index.html" class="home-link">← Home</a>
+      <h1>SICP Lab</h1>
+      <div class="sub">Chapter 1 · Building Abstractions with Procedures</div>
+      <nav class="toc" id="toc"></nav>
+    </aside>
+    <main class="main">
+      <article class="reader" id="reader"></article>
+    </main>
+  </div>
+
+  <button class="notes-toggle" id="notes-toggle">Notes</button>
+  <aside class="notes" id="notes">
+    <h3>Notes</h3>
+    <p class="hint">Saved in this browser only. Yours to scribble in as you re-read.</p>
+    <textarea id="notes-area" spellcheck="false" placeholder="Questions, conjectures, things to revisit…"></textarea>
+    <div class="saved" id="notes-saved"></div>
+  </aside>
+
+  <!-- BiwaScheme powers the live REPLs; the stepper is our own (js/scheme.js). -->
+  <script src="js/biwascheme-min.js"></script>
+  <script src="js/scheme.js"></script>
+  <script src="content/ch1.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

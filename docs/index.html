@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SICP Lab: Structure and Interpretation of Computer Programs</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root {
+      --bg:        #f7f3ec;
+      --bg2:       #f0ebe1;
+      --ink:       #1a1713;
+      --ink2:      #3a3530;
+      --muted:     #7a7060;
+      --rule:      #ddd5c5;
+      --accent:    #8b4513;
+      --accent2:   #6b3310;
+      --gold:      #c47a3a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body.landing {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--serif);
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Nav strip ── */
+    .topbar {
+      border-bottom: 1px solid var(--rule);
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .topbar-cta {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .1em;
+      color: var(--accent);
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .topbar-cta:hover { color: var(--accent2); }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 80px 40px 72px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 36px;
+    }
+
+    .hero-quote {
+      border-left: 3px solid var(--gold);
+      padding-left: 32px;
+      margin: 0 0 40px;
+    }
+
+    .hero-quote p {
+      font-size: clamp(18px, 2.2vw, 23px);
+      line-height: 1.7;
+      color: var(--ink2);
+      font-style: italic;
+      margin: 0 0 1em;
+    }
+
+    .hero-quote p:last-of-type { margin-bottom: 0; }
+
+    .hero-quote em {
+      font-style: normal;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .hero-attribution {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--muted);
+      letter-spacing: .04em;
+      margin-bottom: 44px;
+      padding-left: 35px;
+    }
+
+    .cta {
+      display: inline-block;
+      padding: 12px 32px;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 2px;
+      transition: background .15s;
+    }
+    .cta:hover { background: var(--accent2); }
+
+    /* ── Pitch ── */
+    .pitch-block {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 64px 40px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .pitch-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    .pitch-block h2 {
+      font-size: clamp(22px, 2.8vw, 30px);
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 24px;
+      line-height: 1.2;
+    }
+
+    .pitch-block p {
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--ink2);
+      margin: 0 0 16px;
+    }
+
+    .pitch-block p:last-child { margin-bottom: 0; }
+
+    .pitch-block strong { color: var(--ink); }
+
+    /* ── Insight list ── */
+    .insight-list {
+      list-style: none;
+      padding: 0;
+      margin: 32px 0 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .insight-list li {
+      display: grid;
+      grid-template-columns: 14px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .insight-list li::before {
+      content: '→';
+      color: var(--gold);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding-top: 1px;
+    }
+
+    .insight-list li span {
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--ink2);
+    }
+
+    .insight-list li strong { color: var(--ink); }
+
+    /* ── Code specimen ── */
+    .specimen {
+      margin: 36px 0 0;
+      background: #1e1b17;
+      border-radius: 4px;
+      padding: 24px 28px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.75;
+      color: #9a8f80;
+      overflow-x: auto;
+    }
+
+    .specimen .kw  { color: #c47a3a; }
+    .specimen .fn  { color: #d4b483; }
+    .specimen .cm  { color: #5a5040; }
+    .specimen .num { color: #8fa88f; }
+
+    /* ── Feature cards ── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 36px;
+    }
+
+    .feature {
+      background: var(--bg);
+      padding: 24px 22px;
+    }
+
+    .feature-glyph {
+      font-family: var(--mono);
+      font-size: 16px;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .feature h3 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 8px;
+    }
+
+    .feature p {
+      font-size: 13px !important;
+      line-height: 1.6 !important;
+      color: var(--muted) !important;
+      margin: 0 !important;
+    }
+
+    /* ── Two-col layout for "this site" ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      margin-top: 0;
+    }
+
+    @media (max-width: 640px) {
+      .two-col { grid-template-columns: 1fr; }
+      .features { grid-template-columns: 1fr; }
+    }
+
+    /* ── Footer ── */
+    .footer-cta {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 56px 40px 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .footer-cta p {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .06em;
+      margin: 0;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body class="landing">
+
+  <nav class="topbar">
+    <span class="topbar-title">Structure and Interpretation of Computer Programs</span>
+    <a class="topbar-cta" href="reader.html">Open reader →</a>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-label">Chapter 1 · The wizardry of programming</div>
+
+    <blockquote class="hero-quote">
+      <p>
+        &ldquo;A computational process is indeed much like a sorcerer&rsquo;s idea of a spirit.
+        It cannot be seen or touched. It is not composed of matter at all.
+        However, it is very real. It can perform intellectual work. It can answer questions.
+        It can affect the world by disbursing money at a bank or by
+        <em>controlling a robot arm in a factory.</em>
+      </p>
+      <p>
+        The programs we use to conjure processes are like a sorcerer&rsquo;s spells.
+        They are carefully composed from symbolic expressions in
+        <em>arcane and esoteric programming languages</em>
+        that prescribe the tasks we want our processes to perform.&rdquo;
+      </p>
+    </blockquote>
+
+    <div class="hero-attribution">Abelson &amp; Sussman, <em>SICP</em> (1996) · Preface to Chapter 1</div>
+
+    <a class="cta" href="reader.html">Begin Chapter 1 →</a>
+  </section>
+
+  <!-- ── Side-by-side pitch ── -->
+  <div style="max-width: 820px; margin: 0 auto; padding: 64px 40px; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start;">
+    <div>
+      <div class="pitch-label">The skill</div>
+      <h2 style="font-size: clamp(18px, 2.2vw, 24px); font-weight: 700; margin: 0 0 18px; line-height: 1.2;">Building abstractions is rare.<br>It is also learnable.</h2>
+      <p style="font-size: 15.5px; line-height: 1.8; color: var(--ink2); margin: 0 0 14px;">
+        SICP&rsquo;s subject is <strong>controlling complexity</strong>: the one problem that does not
+        get easier as hardware improves. It teaches you to decompose hard problems into layers
+        that each make sense on their own, then compose those layers back into something that works.
+      </p>
+      <ul class="insight-list" style="margin-top: 16px;">
+        <li><span><strong>See the shape of a process.</strong> Linear recursion builds deferred work; iteration keeps a fixed register. The stepper makes the difference visible.</span></li>
+        <li><span><strong>Understand why abstractions work.</strong> Higher-order procedures are the formal realization that computation patterns can be named and reused.</span></li>
+        <li><span><strong>Know what happens below your tools.</strong> Every compiler, every interpreter is a formalization of ideas in this book.</span></li>
+      </ul>
+    </div>
+    <div>
+      <div class="pitch-label">The gap</div>
+      <h2 style="font-size: clamp(18px, 2.2vw, 24px); font-weight: 700; margin: 0 0 18px; line-height: 1.2;">Most programmers cast spells.<br>Few understand what they summon.</h2>
+      <p style="font-size: 15.5px; line-height: 1.8; color: var(--ink2); margin: 0 0 14px;">
+        Frameworks abstract the machine. Libraries abstract the algorithm.
+        Abstractions-on-top-of-abstractions let you ship a great deal without ever asking
+        <em>what is actually happening here.</em> That is useful. It is also a ceiling.
+      </p>
+      <p style="font-size: 15.5px; line-height: 1.8; color: var(--ink2); margin: 0;">
+        The programmers who break through that ceiling can <strong>read a recursive process and see its shape in memory.</strong>
+        They know why one algorithm costs O(log&nbsp;n) and another O(n²); not because they memorized it,
+        but because they watched the computation unfold.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer-cta">
+    <p>
+      Chapter 1 · Building Abstractions with Procedures<br>
+      Sections 1.1 · 1.2 · 1.3
+    </p>
+    <a class="cta" href="reader.html">Open the reader →</a>
+  </div>
+
+  <footer class="site-footer">
+    Text adapted from the <a href="https://github.com/sarabander/sicp" target="_blank" rel="noopener">sarabander edition</a> of SICP, licensed CC BY-SA 4.0. Abelson &amp; Sussman, MIT Press, 1996.
+  </footer>
+
+</body>
+</html>

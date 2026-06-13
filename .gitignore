@@ -1,0 +1,6 @@
+node_modules/
+sicp_src/
+.DS_Store
+__t.tmp
+.claude/
+CLAUDE.md
