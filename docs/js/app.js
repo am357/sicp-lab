@@ -244,7 +244,7 @@
   // ---------- Boot -----------------------------------------------------------
   function boot() {
     const reader = document.getElementById('reader');
-    const blocks = [].concat(window.SICP_CH1 || [], window.SICP_CH2 || [], window.SICP_CH3 || [], window.SICP_CH4 || []);
+    const blocks = [].concat(window.SICP_CH1 || [], window.SICP_CH2 || [], window.SICP_CH3 || [], window.SICP_CH4 || [], window.SICP_CH5 || []);
     blocks.forEach((b) => reader.appendChild(renderBlock(b)));
     buildToc(blocks);
     setupNotes();

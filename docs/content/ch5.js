@@ -1,0 +1,139 @@
+/*
+ * content/ch5.js — Chapter 5 reader content.
+ *
+ * Text adapted from Structure and Interpretation of Computer Programs, 2e
+ * (Abelson & Sussman), Creative Commons BY-SA 4.0 unabridged edition by
+ * Andres Raba. Exercises are intentionally omitted per project scope.
+ *
+ * Block types: see ch1.js header.
+ */
+window.SICP_CH5 = [
+  { t: 'sec', n: '5.1', title: 'Designing Register Machines' },
+  { t: 'p', html: 'We began this book by studying processes and by describing processes in terms of procedures written in Lisp. To explain the meanings of these procedures, we used a succession of models of evaluation: the substitution model of chapter 1, the environment model of chapter 3, and the metacircular evaluator of chapter 4. Our examination of the metacircular evaluator, in particular, dispelled much of the mystery of how Lisp-like languages are interpreted. But even the metacircular evaluator leaves important questions unanswered, because it fails to elucidate the mechanisms of control in a Lisp system. For instance, the evaluator does not explain how the evaluation of a subexpression manages to return a value to the expression that uses this value, nor does the evaluator explain how some recursive procedures generate iterative processes whereas others generate recursive processes.' },
+  { t: 'p', html: 'These questions remain unanswered because the metacircular evaluator is itself a Lisp program and hence inherits the control structure of the underlying Lisp system. In order to provide a more complete description of the control structure of the Lisp evaluator, we must work at a more primitive level than Lisp itself. In this chapter we will describe processes in terms of the step-by-step operation of a traditional computer. Such a computer, or <em>register machine</em>, sequentially executes <em>instructions</em> that manipulate the contents of a fixed set of storage elements called <em>registers</em>.' },
+
+  { t: 'sub', n: '5.1.1', title: 'A Language for Describing Register Machines' },
+  { t: 'p', html: 'A register-machine language provides instructions for manipulating the contents of registers and for controlling the sequence of instructions. The data-path of a register machine is described by specifying its registers and the operations that connect them. For example, a machine to compute GCD uses two registers, <code>a</code> and <code>b</code>, and operations for computing remainders, testing for zero, and assigning register values:' },
+  { t: 'code', code: '(define gcd-machine\n  (make-machine\n   \'(a b t)             ; register names\n   (list (list \'rem remainder) (list \'= =))  ; operations\n   \'(test-b\n     (test (op =) (reg b) (const 0))\n     (branch (label gcd-done))\n     (assign t (op rem) (reg a) (reg b))\n     (assign a (reg b))\n     (assign b (reg t))\n     (goto (label test-b))\n     gcd-done)))' },
+  { t: 'p', html: 'The controller is a sequence of instructions. Each instruction is either an <code>assign</code> (store a value in a register), a <code>test</code> (evaluate a condition and set a flag), a <code>branch</code> (jump to a label if the flag is true), or a <code>goto</code> (unconditional jump). Labels mark positions in the instruction sequence.' },
+
+  { t: 'sub', n: '5.1.2', title: 'Abstraction in Machine Design' },
+  { t: 'p', html: 'We will often define a machine to include &ldquo;primitive&rdquo; operations that are actually quite complex. For instance, the GCD machine uses <code>rem</code> (remainder) as a primitive, but computing a remainder is itself a multi-step process. We could design a machine for computing remainders, but we choose to abstract it away. This is the same idea of abstraction that permeates the book: we use black-box abstractions to manage complexity, whether in procedures, data, or machines.' },
+
+  { t: 'sub', n: '5.1.3', title: 'Subroutines' },
+  { t: 'p', html: 'When a register machine must perform the same computation at several points in the controller, it would be wasteful to repeat the instructions. Instead, we can place the common instructions in a <em>subroutine</em> and jump to it when needed, returning when done.' },
+  { t: 'p', html: 'The difficulty is how to return: the subroutine must jump back to the place it was called from, but different call sites require different return points. We solve this by storing the return address (a <code>continue</code> register) before the jump:' },
+  { t: 'code', code: '(assign continue (label after-gcd-1))\n(goto (label gcd))\nafter-gcd-1\n;; ... use result ...\n(assign continue (label after-gcd-2))\n(goto (label gcd))\nafter-gcd-2' },
+  { t: 'p', html: 'This is exactly how subroutine calls work in real machines: a return address is saved (typically on a stack) and restored on return.' },
+
+  { t: 'sub', n: '5.1.4', title: 'Using a Stack to Implement Recursion' },
+  { t: 'p', html: 'Recursive procedures pose a deeper challenge. Each recursive call needs its own copy of the local variables and the return address. We solve this by introducing a <em>stack</em>: before each recursive call, we <code>save</code> the registers that will be needed after the call; after the call returns, we <code>restore</code> them.' },
+  { t: 'p', html: 'For example, recursive factorial:' },
+  { t: 'code', code: '(controller\n  (assign continue (label fact-done))\n  fact-loop\n  (test (op =) (reg n) (const 1))\n  (branch (label base-case))\n  (save continue)\n  (save n)\n  (assign n (op -) (reg n) (const 1))\n  (assign continue (label after-fact))\n  (goto (label fact-loop))\n  after-fact\n  (restore n)\n  (restore continue)\n  (assign val (op *) (reg n) (reg val))\n  (goto (reg continue))\n  base-case\n  (assign val (const 1))\n  (goto (reg continue))\n  fact-done)' },
+  { t: 'p', html: 'Compare this with iterative factorial, which does not need the stack: it reuses the same registers across iterations. This makes concrete the difference between recursive and iterative processes that we first discussed in section 1.2.1: a recursive process grows the stack, while an iterative process uses constant space.' },
+
+  { t: 'sub', n: '5.1.5', title: 'Instruction Summary' },
+  { t: 'p', html: 'A controller instruction in our register-machine language is one of:' },
+  { t: 'ul', items: [
+    '<code>(assign &langle;register-name&rangle; (reg &langle;register-name&rangle;))</code>',
+    '<code>(assign &langle;register-name&rangle; (const &langle;constant-value&rangle;))</code>',
+    '<code>(assign &langle;register-name&rangle; (op &langle;operation-name&rangle;) &langle;input₁&rangle; &hellip;)</code>',
+    '<code>(test (op &langle;operation-name&rangle;) &langle;input₁&rangle; &hellip;)</code>',
+    '<code>(branch (label &langle;label-name&rangle;))</code>',
+    '<code>(goto (label &langle;label-name&rangle;))</code> or <code>(goto (reg &langle;register-name&rangle;))</code>',
+    '<code>(save &langle;register-name&rangle;)</code> and <code>(restore &langle;register-name&rangle;)</code>',
+    '<code>(perform (op &langle;operation-name&rangle;) &langle;input₁&rangle; &hellip;)</code>'
+  ] },
+
+  // ── 5.2 ──────────────────────────────────────────────────────────────
+  { t: 'sec', n: '5.2', title: 'A Register-Machine Simulator' },
+  { t: 'p', html: 'In order to gain a good understanding of the design of register machines, we must test the machines we design. One way to test a design is to hand-simulate the controller instructions. But this is extremely tedious for all but the simplest machines. In this section we construct a simulator for register machines. The simulator is a Scheme program with four interface procedures:' },
+  { t: 'ul', items: [
+    '<code>(make-machine register-names ops controller-text)</code> constructs and returns a model of the machine.',
+    '<code>(set-register-contents! machine register-name value)</code> stores a value in a simulated register.',
+    '<code>(get-register-contents machine register-name)</code> returns the contents of a simulated register.',
+    '<code>(start machine)</code> simulates the execution of the given machine, starting from the beginning of the controller sequence.'
+  ] },
+  { t: 'p', html: 'The simulator is organized as a collection of data structures for registers, the stack, and the instruction sequence, plus an execution procedure that steps through the instructions one at a time.' },
+
+  { t: 'sub', n: '5.2.1', title: 'The Machine Model' },
+  { t: 'p', html: 'The <code>make-machine</code> procedure constructs the machine model using message passing. The machine holds a list of named registers, a stack, and the controller instruction sequence. <code>Start</code> initializes the program counter to the beginning of the instruction sequence and calls <code>execute</code>, which processes instructions until the sequence runs out:' },
+  { t: 'code', code: '(define (make-machine register-names ops controller-text)\n  (let ((machine (make-new-machine)))\n    (for-each (lambda (register-name)\n                ((machine \'allocate-register) register-name))\n              register-names)\n    ((machine \'install-operations) ops)\n    ((machine \'install-instruction-sequence)\n     (assemble controller-text machine))\n    machine))' },
+
+  { t: 'sub', n: '5.2.2', title: 'The Assembler' },
+  { t: 'p', html: 'The assembler transforms the controller text (a list of instructions and labels) into a sequence of <em>execution procedures</em>, one for each instruction. Each execution procedure, when called, performs the action of the instruction and advances the program counter. Labels are removed from the sequence and recorded in a lookup table so that <code>branch</code> and <code>goto</code> instructions can jump to the right position.' },
+
+  { t: 'sub', n: '5.2.3', title: 'Generating Execution Procedures for Instructions' },
+  { t: 'p', html: 'For each type of instruction, the assembler generates an appropriate execution procedure. For example, <code>assign</code> generates a procedure that computes the value (from a register, constant, or operation result) and stores it in the target register. <code>Test</code> evaluates the condition and sets the machine&rsquo;s flag. <code>Branch</code> checks the flag and, if true, sets the program counter to the label&rsquo;s position. <code>Save</code> and <code>restore</code> push to and pop from the stack.' },
+
+  { t: 'sub', n: '5.2.4', title: 'Monitoring Machine Performance' },
+  { t: 'p', html: 'We can instrument the simulator to collect statistics about machine performance. By counting the number of stack operations and tracking the maximum depth of the stack, we can empirically verify our claims about the space used by different processes. For instance, recursive factorial uses stack depth proportional to n, while iterative factorial uses constant stack depth. This concrete measurement confirms the theoretical analysis from section 1.2.' },
+
+  // ── 5.3 ──────────────────────────────────────────────────────────────
+  { t: 'sec', n: '5.3', title: 'Storage Allocation and Garbage Collection' },
+  { t: 'p', html: 'In section 5.2, we assumed that our register machines could store arbitrary list structure. Now we must face the question of how a computer&rsquo;s memory is actually organized and how list structure can be represented in terms of a conventional random-access memory.' },
+
+  { t: 'sub', n: '5.3.1', title: 'Memory as Vectors' },
+  { t: 'p', html: 'A conventional computer memory can be thought of as a vector: an array of cells, each identified by a numerical address. To represent list structure, we use two vectors, <code>the-cars</code> and <code>the-cdrs</code>. A pair is represented by an index into these vectors: the <code>car</code> of the pair is in <code>the-cars[index]</code> and the <code>cdr</code> is in <code>the-cdrs[index]</code>. To allocate a new pair, we simply increment a <em>free pointer</em> and store the <code>car</code> and <code>cdr</code> values at the indicated positions.' },
+  { t: 'p', html: 'This simple scheme also represents symbols, numbers, and the empty list using <em>typed pointers</em>: each pointer includes a tag that distinguishes pairs from other objects. Symbols are stored in an <em>obarray</em> (symbol table) to ensure that <code>eq?</code> can be implemented as pointer comparison.' },
+
+  { t: 'sub', n: '5.3.2', title: 'Maintaining the Illusion of Infinite Memory' },
+  { t: 'p', html: 'As a program runs, it allocates more and more pairs. Eventually, the free pointer will reach the end of memory. But many of the pairs allocated earlier in the computation are no longer needed; the memory they occupy is <em>garbage</em>. <em>Garbage collection</em> is the process of reclaiming this unused memory.' },
+  { t: 'p', html: 'We implement a garbage collector using the <em>stop-and-copy</em> algorithm. Memory is divided into two halves: <em>working memory</em> and <em>free memory</em>. When working memory is exhausted, the garbage collector copies all reachable (non-garbage) pairs from working memory into free memory, then swaps the roles of the two halves. The key operation is tracing: starting from the machine&rsquo;s registers, the collector follows all pointers and copies every reachable pair. Pairs that are not reachable are simply abandoned.' },
+  { t: 'p', html: 'The stop-and-copy algorithm is elegant but requires twice the memory. An alternative is <em>mark-and-sweep</em>: mark all reachable pairs, then sweep through memory collecting unmarked pairs into a free list. Mark-and-sweep does not require double memory but is more complex to implement. Both algorithms illustrate a fundamental computer science idea: automatic memory management, which frees the programmer from manual allocation and deallocation.' },
+
+  // ── 5.4 ──────────────────────────────────────────────────────────────
+  { t: 'sec', n: '5.4', title: 'The Explicit-Control Evaluator' },
+  { t: 'p', html: 'In section 4.1 we saw how to describe the behavior of a Lisp evaluator as a procedure in Lisp. Now we show how to give an equivalent description in terms of a register machine. This <em>explicit-control evaluator</em> bridges the gap between the high-level metacircular evaluator and the step-by-step operation of a conventional machine. In effect, it shows how a Lisp evaluator can be implemented in hardware (or in a low-level language).' },
+
+  { t: 'sub', n: '5.4.1', title: 'The Core of the Explicit-Control Evaluator' },
+  { t: 'p', html: 'The explicit-control evaluator uses seven registers: <code>exp</code> (the expression being evaluated), <code>env</code> (the current environment), <code>val</code> (the result of evaluation), <code>continue</code> (the return address), <code>proc</code> (the procedure to apply), <code>argl</code> (the list of evaluated arguments), and <code>unev</code> (a list of unevaluated expressions). It also uses a stack for saving and restoring registers across recursive evaluations.' },
+  { t: 'p', html: 'The main dispatch loop mirrors the <code>eval</code> procedure from section 4.1.1:' },
+  { t: 'code', code: 'eval-dispatch\n  (test (op self-evaluating?) (reg exp))\n  (branch (label ev-self-eval))\n  (test (op variable?) (reg exp))\n  (branch (label ev-variable))\n  (test (op quoted?) (reg exp))\n  (branch (label ev-quoted))\n  (test (op assignment?) (reg exp))\n  (branch (label ev-assignment))\n  (test (op definition?) (reg exp))\n  (branch (label ev-definition))\n  (test (op if?) (reg exp))\n  (branch (label ev-if))\n  (test (op lambda?) (reg exp))\n  (branch (label ev-lambda))\n  (test (op begin?) (reg exp))\n  (branch (label ev-begin))\n  (test (op application?) (reg exp))\n  (branch (label ev-application))\n  (goto (label unknown-expression-type))' },
+  { t: 'p', html: 'Each branch handles one expression type. Simple cases like self-evaluating expressions and variables are straightforward. Compound expressions like procedure applications require saving registers on the stack, evaluating subexpressions, and restoring registers: exactly the mechanism we designed in section 5.1.4.' },
+
+  { t: 'sub', n: '5.4.2', title: 'Sequence Evaluation and Tail Recursion' },
+  { t: 'p', html: 'A crucial aspect of the explicit-control evaluator is its handling of tail recursion. When the evaluator reaches the last expression in a sequence (a tail position), it does <em>not</em> save anything on the stack before evaluating it. Instead, it simply jumps to <code>eval-dispatch</code> with the current <code>continue</code> register. This means the result of the tail expression is returned directly to the caller, without growing the stack.' },
+  { t: 'p', html: 'This is what makes iterative processes possible in Lisp: a procedure like <code>(define (f n) (if (= n 0) 1 (f (- n 1))))</code> executes in constant stack space because the recursive call is in tail position. The evaluator treats it as a jump, not a call. Without this optimization, every recursive call would push a frame, and iterative processes would consume stack proportional to the number of iterations.' },
+
+  { t: 'sub', n: '5.4.3', title: 'Conditionals, Assignments, and Definitions' },
+  { t: 'p', html: 'Conditionals are evaluated by first evaluating the predicate, then branching to evaluate either the consequent or the alternative. The key detail is that after evaluating the predicate, the evaluator restores the expression and environment needed to evaluate the chosen branch.' },
+  { t: 'p', html: 'Assignments and definitions evaluate the value expression, then use <code>set-variable-value!</code> or <code>define-variable!</code> to modify the environment. These operations have side effects on the environment structure, corresponding to the mutation operations we studied in chapter 3.' },
+
+  { t: 'sub', n: '5.4.4', title: 'Running the Evaluator' },
+  { t: 'p', html: 'The explicit-control evaluator can be run on the register-machine simulator of section 5.2. When we do so, we have a working Lisp interpreter that executes entirely as register-machine operations; no part of its behavior is inherited from an underlying Lisp system. This is the bottom of the abstraction hierarchy we have been building throughout the book: from high-level Lisp programs, through the metacircular evaluator, down to register-machine instructions operating on vector memory with garbage collection.' },
+
+  // ── 5.5 ──────────────────────────────────────────────────────────────
+  { t: 'sec', n: '5.5', title: 'Compilation' },
+  { t: 'p', html: 'The explicit-control evaluator of section 5.4 is an interpreter: it classifies and dispatches on each expression as it is encountered during execution. A <em>compiler</em>, by contrast, performs the analysis once, before execution, and produces a sequence of register-machine instructions that can be executed directly. Compilation can yield significant efficiency gains because the analysis overhead is paid once rather than every time the expression is evaluated.' },
+
+  { t: 'sub', n: '5.5.1', title: 'Structure of the Compiler' },
+  { t: 'p', html: 'The compiler is organized similarly to the evaluator: it is a case analysis on the type of expression to be compiled. But instead of executing the expression, each case generates a sequence of instructions that, when executed, will have the same effect. The compiler procedure <code>compile</code> dispatches on expression type:' },
+  { t: 'code', code: '(define (compile exp target linkage)\n  (cond ((self-evaluating? exp)\n         (compile-self-evaluating exp target linkage))\n        ((quoted? exp) (compile-quoted exp target linkage))\n        ((variable? exp) (compile-variable exp target linkage))\n        ((assignment? exp) (compile-assignment exp target linkage))\n        ((definition? exp) (compile-definition exp target linkage))\n        ((if? exp) (compile-if exp target linkage))\n        ((lambda? exp) (compile-lambda exp target linkage))\n        ((begin? exp)\n         (compile-sequence (begin-actions exp) target linkage))\n        ((application? exp)\n         (compile-application exp target linkage))\n        (else (error "Unknown expression type" exp))))' },
+  { t: 'p', html: 'Each compilation procedure takes a <code>target</code> register (where to put the result) and a <code>linkage</code> descriptor (what to do after the compiled code executes: go to the next instruction, return, or jump to a label). This systematic handling of targets and linkages allows the compiler to generate efficient code that avoids unnecessary register saves and restores.' },
+
+  { t: 'sub', n: '5.5.2', title: 'Compiling Expressions' },
+  { t: 'p', html: 'Compiling a self-evaluating expression or a quoted expression simply generates an <code>assign</code> instruction that loads the constant value into the target register. Compiling a variable generates a <code>lookup-variable-value</code> operation. These are the base cases of the compilation.' },
+  { t: 'p', html: 'Compiling a conditional (<code>if</code>) generates code to evaluate the predicate, branch on the result, and evaluate either the consequent or the alternative. The two branches are spliced together with labels generated by the compiler.' },
+  { t: 'p', html: 'Compiling a <code>lambda</code> expression generates code that constructs a procedure object at runtime, capturing the current environment. The body of the lambda is compiled separately and placed after the main code, linked by a label.' },
+
+  { t: 'sub', n: '5.5.3', title: 'Compiling Combinations' },
+  { t: 'p', html: 'Compiling a procedure application is the most complex case. The compiler must: (1) compile the operator expression, (2) compile each operand expression, constructing the argument list, and (3) generate code to apply the compiled procedure to the arguments. The compiler must be careful about which registers to save and restore around each subcompilation; an overly conservative approach would save everything, while an overly aggressive approach might clobber a register that is still needed.' },
+  { t: 'p', html: 'The compiler uses <em>register-need analysis</em> to determine the minimal set of registers that must be preserved around each subexpression. Each compiled code sequence is annotated with the set of registers it <em>needs</em> (reads before writing) and the set it <em>modifies</em>. When composing two sequences, a <code>save</code>/<code>restore</code> pair is inserted only if the first sequence modifies a register that the second sequence needs.' },
+
+  { t: 'sub', n: '5.5.4', title: 'Combining Instruction Sequences' },
+  { t: 'p', html: 'Instruction sequences are represented as lists of instructions together with their register-needs and register-modifies sets. Two key combiners build larger sequences from smaller ones: <code>append-instruction-sequences</code> (for sequential composition) and <code>parallel-instruction-sequences</code> (for the two branches of a conditional). The combiner <code>preserving</code> wraps a sequence pair with <code>save</code>/<code>restore</code> only when analysis shows it is necessary.' },
+
+  { t: 'sub', n: '5.5.5', title: 'An Example of Compiled Code' },
+  { t: 'p', html: 'Consider compiling the expression <code>(define (factorial n) (if (= n 1) 1 (* (factorial (- n 1)) n)))</code>. The compiler produces register-machine code that is substantially more efficient than what the interpreter would do: the dispatch on expression type is eliminated, the register saves are minimized, and the tail call is compiled as a direct jump.' },
+  { t: 'code', code: ';; Compiled code for factorial (simplified)\n(assign val (op make-compiled-procedure) (label entry1) (reg env))\n(goto (label after-lambda2))\nentry1\n  (assign env (op compiled-procedure-env) (reg proc))\n  (assign env (op extend-environment) (const (n)) (reg argl) (reg env))\n  (save continue)\n  (save env)\n  (assign proc (op lookup-variable-value) (const =) (reg env))\n  (assign val (const 1))\n  (assign argl (op list) (reg val))\n  (assign val (op lookup-variable-value) (const n) (reg env))\n  (assign argl (op cons) (reg val) (reg argl))\n  (test (op primitive-procedure?) (reg proc))\n  (branch (label primitive-branch3))\n  ;; ... compiled procedure application ...\nprimitive-branch3\n  (assign val (op apply-primitive-procedure) (reg proc) (reg argl))\n  ;; ... test val, branch to base case or recursive case ...\nafter-lambda2\n  (perform (op define-variable!) (const factorial) (reg val) (reg env))\n  (assign val (const ok))' },
+
+  { t: 'sub', n: '5.5.6', title: 'Lexical Addressing' },
+  { t: 'p', html: 'The compiler can gain further efficiency by exploiting the lexical structure of the program. Instead of looking up a variable by scanning the environment frame by frame at runtime, the compiler can determine at compile time how many frames to skip and which slot within the frame to access. This is called <em>lexical addressing</em>. For example, if variable <code>x</code> is defined two frames out and is the third variable in that frame, the compiler can generate <code>(op lexical-address-lookup) (const (2 . 2)) (reg env)</code> instead of a symbol-based lookup.' },
+  { t: 'p', html: 'Lexical addressing eliminates the need for runtime symbol comparison during variable lookup, which is one of the most frequent operations in program execution. This optimization is used by all serious Lisp and Scheme compilers.' },
+
+  { t: 'sub', n: '5.5.7', title: 'Interfacing Compiled Code to the Evaluator' },
+  { t: 'p', html: 'One of the elegant aspects of our implementation is that compiled code and interpreted code can call each other freely. The compiled code and the evaluator use the same register conventions and the same data structures for environments, procedures, and the stack. A compiled procedure can call an interpreted procedure (by jumping to <code>eval-dispatch</code> with the appropriate expression and environment), and an interpreted procedure can call a compiled procedure (by jumping to the compiled code&rsquo;s entry point).' },
+  { t: 'p', html: 'This interoperability is valuable because it allows incremental compilation: we can compile the performance-critical parts of a program while leaving the rest interpreted. The seamless interface between compiled and interpreted code is a hallmark of production Lisp systems.' },
+  { t: 'p', html: 'With the compiler, we have completed the arc of the book. We began with the abstract idea of a computational process, described it in a high-level language (Lisp), explained it with a sequence of increasingly concrete models (substitution, environment, metacircular evaluation), and finally implemented it all the way down to register operations on vector memory with garbage collection. At every level, the same themes recur: abstraction, naming, conventional interfaces, metalinguistic power. The ability to treat procedures as data, which seemed exotic in chapter 1, is revealed as the organizing principle that connects all these levels: from higher-order procedures to the evaluator to the compiler, it is always procedures-as-data that gives us the leverage to describe and control complexity.' },
+];
