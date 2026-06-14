@@ -210,6 +210,9 @@
         try { localStorage.setItem(KEY, ta.value); saved.textContent = 'saved ' + new Date().toLocaleTimeString(); } catch (e) { saved.textContent = 'could not save'; }
       }, 300);
     });
+    window.addEventListener('storage', function (e) {
+      if (e.key === KEY) { ta.value = e.newValue || ''; saved.textContent = 'updated from another tab'; }
+    });
   }
 
   // ---------- Scroll-spy for active TOC entry -------------------------------
