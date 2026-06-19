@@ -135,7 +135,8 @@
       }
       case 'sub': {
         const h = el('h3'); h.id = anchor(b.n);
-        h.innerHTML = '<span class="num">' + b.n + '</span>' + b.title;
+        var numHtml = /^\d[\d.]*$/.test(b.n) ? '<span class="num">' + b.n + '</span>' : '';
+        h.innerHTML = numHtml + b.title;
         return h;
       }
       case 'subsub': return el('h4', '', null, b.title);
@@ -286,7 +287,7 @@
       blocks = blocks.concat(ch);
       var exs = exercisesByChapter[String(i + 1)];
       if (exs) {
-        blocks.push({ t: 'sub', n: (i + 1) + '.practice', title: 'Practice' });
+        blocks.push({ t: 'sub', n: (i + 1) + '.exercises', title: 'Exercises' });
         blocks = blocks.concat(exs);
       }
     });
