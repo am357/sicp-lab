@@ -103,6 +103,17 @@ pre.static {
 .stepper .row .note { color: var(--muted); font-size: 12.5px; align-self: center; }
 .redex { background: var(--redex-bg); color: var(--redex-ink); border-radius: 3px; padding: 0 2px; box-shadow: 0 0 0 1px #e8c66a inset; }
 
+/* ---- Exercise blocks ---- */
+.exercise { margin: 20px 0; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; background: var(--panel); }
+.exercise-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #faf6ed; border-bottom: 1px solid var(--rule); }
+.exercise-toggle { font-family: var(--mono); font-size: 11px; color: var(--muted); user-select: none; }
+.exercise-label { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: .02em; }
+.exercise-body { padding: 14px 16px 6px; }
+.exercise-desc { font-size: 16px; line-height: 1.7; margin-bottom: 12px; }
+.exercise-desc code { font-family: var(--mono); font-size: .86em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.exercise-desc p { margin: 8px 0; }
+.exercise-desc pre { font-family: var(--mono); font-size: 14px; background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; overflow-x: auto; margin: 10px 0; }
+
 /* ---- Notes drawer ---- */
 .notes-toggle { position: fixed; right: 18px; bottom: 18px; z-index: 20; border: 1px solid var(--accent); background: var(--accent); color: #fff; font-family: var(--mono); font-size: 13px; padding: 9px 14px; border-radius: 22px; cursor: pointer; box-shadow: 0 3px 12px rgba(0,0,0,.15); }
 .notes { position: fixed; right: -380px; top: 0; width: 360px; height: 100vh; background: var(--panel); border-left: 1px solid var(--rule); transition: right .2s ease; z-index: 19; display: flex; flex-direction: column; box-shadow: -6px 0 24px rgba(0,0,0,.06); }

@@ -149,6 +149,7 @@
       case 'stepper': return buildStepper(b.code);
       case 'code':
         return b.live ? liveRepl(b.code) : staticCode(b.code);
+      case 'exercise': return buildExercise(b);
       default: return el('div');
     }
   }
@@ -174,6 +175,34 @@
 
   function staticCode(code) {
     const pre = document.createElement('pre'); pre.className = 'static'; pre.textContent = code; return pre;
+  }
+
+  // ---------- Exercise block ------------------------------------------------
+  function buildExercise(b) {
+    var wrap = el('div', 'exercise');
+    wrap.id = 'ex-' + b.n.replace(/\./g, '-');
+    var header = el('div', 'exercise-header');
+    var toggle = el('span', 'exercise-toggle', null, '▶');
+    var label = el('span', 'exercise-label', null, 'Exercise ' + b.n);
+    header.appendChild(toggle);
+    header.appendChild(label);
+    wrap.appendChild(header);
+
+    var body = el('div', 'exercise-body');
+    body.style.display = 'none';
+    var desc = el('div', 'exercise-desc');
+    desc.innerHTML = b.html;
+    body.appendChild(desc);
+    body.appendChild(liveRepl(b.code || ''));
+    wrap.appendChild(body);
+
+    header.style.cursor = 'pointer';
+    header.onclick = function () {
+      var open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      toggle.textContent = open ? '▶' : '▼';
+    };
+    return wrap;
   }
 
   // ---------- Build the table of contents -----------------------------------
@@ -244,7 +273,23 @@
   // ---------- Boot -----------------------------------------------------------
   function boot() {
     const reader = document.getElementById('reader');
-    const blocks = [].concat(window.SICP_CH1 || [], window.SICP_CH2 || [], window.SICP_CH3 || [], window.SICP_CH4 || [], window.SICP_CH5 || []);
+    var exercisesByChapter = {};
+    [window.SICP_EX1, window.SICP_EX2, window.SICP_EX3, window.SICP_EX4, window.SICP_EX5].forEach(function (exs) {
+      if (!exs || !exs.length) return;
+      var ch = exs[0].n.split('.')[0];
+      exercisesByChapter[ch] = exs;
+    });
+    var chapters = [window.SICP_CH1, window.SICP_CH2, window.SICP_CH3, window.SICP_CH4, window.SICP_CH5];
+    var blocks = [];
+    chapters.forEach(function (ch, i) {
+      if (!ch) return;
+      blocks = blocks.concat(ch);
+      var exs = exercisesByChapter[String(i + 1)];
+      if (exs) {
+        blocks.push({ t: 'sub', n: (i + 1) + '.practice', title: 'Practice' });
+        blocks = blocks.concat(exs);
+      }
+    });
     blocks.forEach((b) => reader.appendChild(renderBlock(b)));
     buildToc(blocks);
     setupNotes();
