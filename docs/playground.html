@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SICP Lab · Scheme Playground</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root {
+      --bg:      #f7f3ec;
+      --bg2:     #f0ebe1;
+      --ink:     #1a1713;
+      --ink2:    #3a3530;
+      --muted:   #7a7060;
+      --rule:    #ddd5c5;
+      --accent:  #8b4513;
+      --accent2: #6b3310;
+      --gold:    #c47a3a;
+      --panel:   #fdfaf5;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--serif);
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .pg-header {
+      border-bottom: 1px solid var(--rule);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .pg-header a {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--muted);
+    }
+    .pg-header a:hover { color: var(--accent); }
+
+    .pg-brand {
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: .12em;
+      color: var(--accent) !important;
+      font-weight: 700;
+    }
+
+    .pg-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .06em;
+      color: var(--ink2);
+      flex: 1;
+    }
+
+    /* ── Layout ── */
+    .pg-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 0;
+    }
+
+    @media (max-width: 700px) {
+      .pg-body { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+    }
+
+    /* ── Editor pane ── */
+    .pg-editor-pane {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--rule);
+      min-height: 0;
+    }
+
+    .pg-editor-pane .bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--bg2);
+    }
+
+    .pg-editor-pane .bar button {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      background: var(--accent);
+      color: #fff;
+    }
+    .pg-editor-pane .bar button:hover { background: var(--accent2); }
+
+    .pg-editor-pane .bar .hint {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+
+    .pg-editor-pane .bar .clear-btn {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--rule);
+    }
+    .pg-editor-pane .bar .clear-btn:hover { color: var(--ink); border-color: var(--muted); }
+
+    #pg-editor {
+      flex: 1;
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: none;
+      padding: 16px 20px;
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+      background: var(--panel);
+      color: var(--ink);
+      tab-size: 2;
+    }
+
+    /* ── Output pane ── */
+    .pg-output-pane {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .pg-output-pane .bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--bg2);
+    }
+
+    .pg-output-pane .bar .label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    #pg-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      font-family: var(--mono);
+      font-size: 13.5px;
+      line-height: 1.7;
+      background: var(--bg);
+    }
+
+    #pg-output .val  { color: var(--accent); }
+    #pg-output .disp { color: var(--ink2); }
+    #pg-output .err  { color: #c0392b; }
+    #pg-output .echo { color: var(--muted); font-style: italic; }
+    #pg-output .sep  { border-top: 1px solid var(--rule); margin: 8px 0; }
+  </style>
+</head>
+<body>
+
+  <header class="pg-header">
+    <a class="pg-brand" href="/">SICP Lab</a>
+    <span class="pg-title">Scheme Playground</span>
+    <a href="reader.html">Reader</a>
+    <a href="https://github.com/am357/sicp-lab" target="_blank" rel="noopener">GitHub ↗</a>
+  </header>
+
+  <div class="pg-body">
+    <div class="pg-editor-pane">
+      <div class="bar">
+        <button id="pg-run">Run</button>
+        <button class="clear-btn" id="pg-clear">Clear output</button>
+        <span style="flex:1"></span>
+        <span class="hint">Shift+Enter to run</span>
+      </div>
+      <textarea id="pg-editor" spellcheck="false">;; Welcome to the Scheme Playground
+;; Write Scheme code here and press Run (or Shift+Enter).
+
+(define (square x) (* x x))
+
+(define (sum-of-squares a b)
+  (+ (square a) (square b)))
+
+(sum-of-squares 3 4)
+
+(define (factorial n)
+  (if (= n 0) 1
+      (* n (factorial (- n 1)))))
+
+(factorial 10)</textarea>
+    </div>
+
+    <div class="pg-output-pane">
+      <div class="bar">
+        <span class="label">Output</span>
+      </div>
+      <div id="pg-output"></div>
+    </div>
+  </div>
+
+  <script src="js/biwascheme-min.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var editor = document.getElementById('pg-editor');
+    var output = document.getElementById('pg-output');
+    var interp = null;
+
+    function getInterp() {
+      if (!interp) interp = new BiwaScheme.Interpreter(function () {});
+      return interp;
+    }
+
+    function resetInterp() {
+      interp = new BiwaScheme.Interpreter(function () {});
+    }
+
+    function splitTopForms(src) {
+      src = src.replace(/;[^\n]*/g, '');
+      var forms = [];
+      var depth = 0, start = -1;
+      for (var i = 0; i < src.length; i++) {
+        var c = src[i];
+        if (depth === 0 && start === -1 && !/\s/.test(c)) start = i;
+        if (c === '(') depth++;
+        else if (c === ')') {
+          depth--;
+          if (depth === 0) { forms.push(src.slice(start, i + 1)); start = -1; }
+        } else if (depth === 0 && /\s/.test(c) && start !== -1) {
+          forms.push(src.slice(start, i)); start = -1;
+        }
+      }
+      if (start !== -1) forms.push(src.slice(start));
+      return forms.map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+
+    function emit(cls, text) {
+      var div = document.createElement('div');
+      div.className = cls;
+      div.textContent = text;
+      output.appendChild(div);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function run() {
+      var sep = document.createElement('div');
+      sep.className = 'sep';
+      if (output.children.length > 0) output.appendChild(sep);
+
+      var forms = splitTopForms(editor.value);
+      var ip = getInterp();
+      var i = 0;
+
+      function next() {
+        if (i >= forms.length) return;
+        var form = forms[i++];
+        var buffered = '';
+        BiwaScheme.Port.current_output = new BiwaScheme.Port.CustomOutput(function (s) { buffered += s; });
+        try {
+          ip.evaluate(form, function (result) {
+            if (buffered) emit('disp', buffered);
+            var shown;
+            if (result === undefined || result === BiwaScheme.undef) shown = '';
+            else shown = BiwaScheme.to_write(result);
+            if (shown !== '') emit('val', shown);
+            else if (!buffered) emit('echo', 'ok');
+            next();
+          });
+        } catch (err) {
+          emit('err', String(err && err.message ? err.message : err));
+          next();
+        }
+      }
+      next();
+    }
+
+    document.getElementById('pg-run').onclick = run;
+    document.getElementById('pg-clear').onclick = function () {
+      output.innerHTML = '';
+      resetInterp();
+    };
+
+    editor.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); run(); }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var s = editor.selectionStart, end = editor.selectionEnd;
+        editor.value = editor.value.substring(0, s) + '  ' + editor.value.substring(end);
+        editor.selectionStart = editor.selectionEnd = s + 2;
+      }
+    });
+  })();
+  </script>
+
+</body>
+</html>
