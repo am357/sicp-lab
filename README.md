@@ -9,3 +9,17 @@ Just like the book, at the end of each chapter the project provides the list of 
 ## Playground
 
 The project provides a playground environment that allows to interactively code in `Scheme`. The playground also links to the exercises to provide a convinient way to solving the exercises in one place.
+
+## Lectures
+
+The homepage includes a curated mapping of the original 1986 MIT lecture series by Abelson and Sussman to the book's chapters. All 20 lectures are freely available on YouTube:
+
+[MIT 6.001 SICP Lecture Playlist](https://www.youtube.com/playlist?list=PLE18841CABEA24090)
+
+| Lectures | Chapter |
+|----------|---------|
+| 1A, 1B, 2A | Ch 1: Building Abstractions with Procedures |
+| 2B, 3A, 3B, 4A, 4B | Ch 2: Building Abstractions with Data |
+| 5A, 5B, 6A, 6B | Ch 3: Modularity, Objects, and State |
+| 7A, 7B, 8A, 8B | Ch 4: Metalinguistic Abstraction |
+| 9A, 9B, 10A, 10B | Ch 5: Computing with Register Machines |
