@@ -28,32 +28,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Nav strip ── */
-    .topbar {
-      border-bottom: 1px solid var(--rule);
-      padding: 14px 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .topbar-title {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .topbar-cta {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: .1em;
-      color: var(--accent);
-      text-decoration: none;
-      text-transform: uppercase;
-    }
-    .topbar-cta:hover { color: var(--accent2); }
 
     /* ── Hero ── */
     .hero {
@@ -318,13 +292,7 @@
 </head>
 <body class="landing">
 
-  <nav class="topbar">
-    <a href="/" style="text-decoration: none;"><span class="topbar-title" style="font-size: 13px; letter-spacing: .12em; color: var(--accent);">SICP Lab</span></a>
-    <span style="flex: 1;"></span>
-    <a class="topbar-cta" href="#lectures">Lectures</a>
-    <a class="topbar-cta" href="playground.html" style="margin-left: 16px;">Playground</a>
-    <a class="topbar-cta" href="https://github.com/am357/sicp-lab" target="_blank" rel="noopener" style="margin-left: 16px;">GitHub ↗</a>
-  </nav>
+  <script src="js/nav.js"></script>
 
   <!-- ── Hero ── -->
   <section class="hero">
@@ -447,10 +415,6 @@
     <a class="cta" href="reader.html">Open the reader →</a>
   </div>
 
-  <footer class="site-footer">
-    Text adapted from the <a href="https://github.com/sarabander/sicp" target="_blank" rel="noopener">sarabander edition</a> of SICP, licensed CC BY-SA 4.0. Abelson &amp; Sussman, MIT Press, 1996.
-    · <a href="https://github.com/am357/sicp-lab" target="_blank" rel="noopener">Source on GitHub</a>
-  </footer>
 
 </body>
 </html>

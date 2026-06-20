@@ -20,6 +20,8 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; }
+    .site-nav { flex-shrink: 0; }
+    .site-footer { display: none; }
 
     body {
       background: var(--bg);
@@ -32,41 +34,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Header ── */
-    .pg-header {
-      border-bottom: 1px solid var(--rule);
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-shrink: 0;
-    }
-
-    .pg-header a {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: var(--muted);
-    }
-    .pg-header a:hover { color: var(--accent); }
-
-    .pg-brand {
-      font-family: var(--mono);
-      font-size: 13px;
-      letter-spacing: .12em;
-      color: var(--accent) !important;
-      font-weight: 700;
-    }
-
-    .pg-title {
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing: .06em;
-      color: var(--ink2);
-      flex: 1;
-    }
 
     /* ── Layout ── */
     .pg-body {
@@ -255,12 +222,7 @@
 </head>
 <body>
 
-  <header class="pg-header">
-    <a class="pg-brand" href="/">SICP Lab</a>
-    <span class="pg-title">Scheme Playground</span>
-    <a href="reader.html">Reader</a>
-    <a href="https://github.com/am357/sicp-lab" target="_blank" rel="noopener">GitHub ↗</a>
-  </header>
+  <script src="js/nav.js"></script>
 
   <div class="pg-body">
     <div class="pg-editor-pane">
