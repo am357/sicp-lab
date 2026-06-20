@@ -128,6 +128,11 @@
   // ---------- Render content -------------------------------------------------
   function renderBlock(b) {
     switch (b.t) {
+      case 'ch': {
+        const h = el('h1'); h.id = anchor(b.n);
+        h.innerHTML = '<span class="num">' + b.n + '</span>' + b.title;
+        return h;
+      }
       case 'sec': {
         const h = el('h2'); h.id = anchor(b.n);
         h.innerHTML = '<span class="num">' + b.n + '</span>' + b.title;
@@ -210,10 +215,10 @@
   function buildToc(blocks) {
     const toc = document.getElementById('toc');
     blocks.forEach((b) => {
-      if (b.t !== 'sec' && b.t !== 'sub') return;
+      if (b.t !== 'ch' && b.t !== 'sec' && b.t !== 'sub') return;
       const a = document.createElement('a');
       a.href = '#' + anchor(b.n);
-      a.className = b.t === 'sec' ? 'lvl-sec' : 'lvl-sub';
+      a.className = b.t === 'ch' ? 'lvl-ch' : b.t === 'sec' ? 'lvl-sec' : 'lvl-sub';
       a.textContent = b.n + '  ' + b.title.replace(/<[^>]+>/g, '');
       a.onclick = function (e) {
         e.preventDefault();
