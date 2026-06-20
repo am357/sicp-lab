@@ -95,6 +95,7 @@
       padding: 8px 16px;
       border-bottom: 1px solid var(--rule);
       background: var(--bg2);
+      flex-wrap: wrap;
     }
 
     .pg-editor-pane .bar button {
@@ -123,6 +124,78 @@
       border: 1px solid var(--rule);
     }
     .pg-editor-pane .bar .clear-btn:hover { color: var(--ink); border-color: var(--muted); }
+
+    /* ── Exercise picker ── */
+    #pg-exercise-select {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 5px 8px;
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      max-width: 200px;
+    }
+    #pg-exercise-select:hover { border-color: var(--muted); }
+
+    /* ── Exercise description panel ── */
+    .pg-exercise-desc {
+      display: none;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--rule);
+      background: #faf6ed;
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-y: auto;
+      max-height: 220px;
+    }
+    .pg-exercise-desc.show { display: block; }
+
+    .pg-exercise-desc .ex-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .pg-exercise-desc .ex-label {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: .02em;
+    }
+
+    .pg-exercise-desc .ex-close {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 2px 6px;
+    }
+    .pg-exercise-desc .ex-close:hover { color: var(--ink); }
+
+    .pg-exercise-desc .ex-content pre {
+      background: #1e1b17;
+      color: #9a8f80;
+      padding: 12px 16px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    .pg-exercise-desc .ex-content code {
+      font-family: var(--mono);
+      font-size: 0.92em;
+      background: rgba(0,0,0,.06);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
 
     #pg-editor {
       flex: 1;
@@ -194,8 +267,16 @@
       <div class="bar">
         <button id="pg-run">Run</button>
         <button class="clear-btn" id="pg-clear">Clear output</button>
+        <select id="pg-exercise-select"><option value="">Load exercise…</option></select>
         <span style="flex:1"></span>
         <span class="hint">Shift+Enter to run</span>
+      </div>
+      <div class="pg-exercise-desc" id="pg-desc">
+        <div class="ex-head">
+          <span class="ex-label" id="pg-desc-label"></span>
+          <button class="ex-close" id="pg-desc-close">✕ hide</button>
+        </div>
+        <div class="ex-content" id="pg-desc-content"></div>
       </div>
       <textarea id="pg-editor" spellcheck="false">;; Welcome to the Scheme Playground
 ;; Write Scheme code here and press Run (or Shift+Enter).
@@ -223,14 +304,62 @@
   </div>
 
   <script src="js/biwascheme-min.js"></script>
+  <script src="content/exercises-ch1.js"></script>
+  <script src="content/exercises-ch2.js"></script>
+  <script src="content/exercises-ch3.js"></script>
+  <script src="content/exercises-ch4.js"></script>
+  <script src="content/exercises-ch5.js"></script>
   <script>
   (function () {
     'use strict';
 
     var editor = document.getElementById('pg-editor');
     var output = document.getElementById('pg-output');
+    var descPanel = document.getElementById('pg-desc');
+    var descLabel = document.getElementById('pg-desc-label');
+    var descContent = document.getElementById('pg-desc-content');
+    var exSelect = document.getElementById('pg-exercise-select');
     var interp = null;
 
+    // ── Build exercise dropdown ──
+    var allExercises = [];
+    var chapterNames = ['Ch 1', 'Ch 2', 'Ch 3', 'Ch 4', 'Ch 5'];
+    [window.SICP_EX1, window.SICP_EX2, window.SICP_EX3, window.SICP_EX4, window.SICP_EX5].forEach(function (exs, ci) {
+      if (!exs || !exs.length) return;
+      var group = document.createElement('optgroup');
+      group.label = chapterNames[ci];
+      exs.forEach(function (ex, ei) {
+        var opt = document.createElement('option');
+        opt.value = ci + ':' + ei;
+        opt.textContent = 'Exercise ' + ex.n;
+        group.appendChild(opt);
+        allExercises.push(ex);
+      });
+      exSelect.appendChild(group);
+    });
+
+    var exerciseSources = [window.SICP_EX1, window.SICP_EX2, window.SICP_EX3, window.SICP_EX4, window.SICP_EX5];
+
+    exSelect.addEventListener('change', function () {
+      if (!exSelect.value) {
+        descPanel.classList.remove('show');
+        return;
+      }
+      var parts = exSelect.value.split(':');
+      var ex = exerciseSources[parseInt(parts[0])][parseInt(parts[1])];
+      descLabel.textContent = 'Exercise ' + ex.n;
+      descContent.innerHTML = ex.html;
+      descPanel.classList.add('show');
+      editor.value = ex.code || '';
+      output.innerHTML = '';
+      resetInterp();
+    });
+
+    document.getElementById('pg-desc-close').onclick = function () {
+      descPanel.classList.remove('show');
+    };
+
+    // ── Interpreter ──
     function getInterp() {
       if (!interp) interp = new BiwaScheme.Interpreter(function () {});
       return interp;
@@ -314,6 +443,23 @@
         editor.selectionStart = editor.selectionEnd = s + 2;
       }
     });
+
+    // ── Deep-link: ?ex=4.35 ──
+    var params = new URLSearchParams(window.location.search);
+    var exParam = params.get('ex');
+    if (exParam) {
+      for (var ci = 0; ci < exerciseSources.length; ci++) {
+        var src = exerciseSources[ci];
+        if (!src) continue;
+        for (var ei = 0; ei < src.length; ei++) {
+          if (src[ei].n === exParam) {
+            exSelect.value = ci + ':' + ei;
+            exSelect.dispatchEvent(new Event('change'));
+            break;
+          }
+        }
+      }
+    }
   })();
   </script>
 
