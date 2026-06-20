@@ -1,6 +1,6 @@
 # SICP-LAB
 
-`sicp-lab` is a tribute to the influential [Structure and Interpretation of Computer Programs (SICP)](https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html) book by Abelson, Sussman, and Sussman. Its purpose it to prvide an interactive experince to help the book comprehension.
+[sicp-lab.com](https://sicp-lab.com) is a tribute to the influential [Structure and Interpretation of Computer Programs (SICP)](https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/index.html) book by Abelson, Sussman, and Sussman. Its purpose it to prvide an interactive experince to help the book comprehension.
 
 ## Exercises
 
