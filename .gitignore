@@ -4,3 +4,10 @@ sicp_src/
 __t.tmp
 .claude/
 CLAUDE.md
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
