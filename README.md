@@ -23,3 +23,9 @@ The homepage includes a curated mapping of the original 1986 MIT lecture series 
 | 5A, 5B, 6A, 6B | Ch 3: Modularity, Objects, and State |
 | 7A, 7B, 8A, 8B | Ch 4: Metalinguistic Abstraction |
 | 9A, 9B, 10A, 10B | Ch 5: Computing with Register Machines |
+
+## License
+
+Code is licensed under [Apache 2.0](LICENSE).
+
+Book content in [`docs/content/`](docs/content/) is adapted from the [sarabander edition](https://github.com/sarabander/sicp) of SICP and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). See [`docs/content/LICENSE`](docs/content/LICENSE) for details.
